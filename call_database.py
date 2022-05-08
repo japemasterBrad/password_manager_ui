@@ -23,7 +23,14 @@ def add_new_entry(service, username, password):
 
 
 def remove_entry():
-    pass
+    conn = connect("passwords.db")
+    cur = conn.cursor()
+    cur.execute(
+                "DROP FROM passwords,"
+                ""
+                )
+    conn.commit()
+    conn.close()
 
 
 def copy_to_clipboard():

@@ -2,6 +2,7 @@ from tkinter import *
 from sqlite3 import *
 
 import call_database
+import main
 
 
 def add_new_entry():

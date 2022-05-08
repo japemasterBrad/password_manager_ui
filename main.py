@@ -74,14 +74,13 @@ if __name__ == '__main__':
 
         add_new_entry_window.mainloop()
 
-
     def passwordCorrect(): #-*-*-*-*-*-*-*-*-*-*-*-* IF PASSWORD IS CORRECT -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
         def add_password_entry():  # opens window to submit new service, username, password
             print("Adding password entry")
             add_new_entry()
             
         def refresh_listbox():
-            print("Refreshing list")
+            pass_list.update()
 
         def remove_password_entry():  # Deletes record being selected
             print("Removing password entry")
@@ -114,10 +113,11 @@ if __name__ == '__main__':
         conn.commit()
         conn.close()
         
+        pass_list.delete(0, END)
+        
         for data in values:
             data_row = data[0] + " || " + data[1] # + " || "  + data[2]
             pass_list.insert(END, data_row)
-            pass_list.pack(padx=20)
 
         password_window_button_width = 15
         main_window_button_padding = 10
