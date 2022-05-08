@@ -4,7 +4,7 @@ from sqlite3 import *
 import call_database
 
 if __name__ == '__main__':
-    def add_new_entry():
+    def add_new_entry(): # -*-*-*-*-*-*-*-*-*-*-*-* ADD NEW ENTRY WINDOW -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
         add_new_entry_window = Tk()
         add_new_entry_window.title("Add New Entry")
         add_new_entry_window.geometry("300x140")
@@ -75,10 +75,13 @@ if __name__ == '__main__':
         add_new_entry_window.mainloop()
 
 
-    def passwordCorrect():
+    def passwordCorrect(): #-*-*-*-*-*-*-*-*-*-*-*-* IF PASSWORD IS CORRECT -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
         def add_password_entry():  # opens window to submit new service, username, password
             print("Adding password entry")
             add_new_entry()
+            
+        def refresh_listbox():
+            print("Refreshing list")
 
         def remove_password_entry():  # Deletes record being selected
             print("Removing password entry")
@@ -90,7 +93,7 @@ if __name__ == '__main__':
             main_window.quit()
 
         main_window = Tk()
-        main_window.geometry("450x250")
+        main_window.geometry("650x400")
         main_window.title("Epoxy Password Manager")
 
         left_frame = Frame(main_window)
@@ -99,21 +102,22 @@ if __name__ == '__main__':
         button_frame = Frame(main_window)
         button_frame.pack(side=RIGHT, ipady=30)
 
-        def getter():
-            string = ""
-            conn = connect("passwords.db")
-            cur = conn.cursor()
-            cur.execute("SELECT * FROM passwords")
-            values = cur.fetchall()
-            conn.commit()
-            conn.close()
-
-            for data in values:
-                return data
-
-        pass_list = Listbox(left_frame, width=30, selectmode=SINGLE)
-        pass_list.insert(END, getter())
+        pass_list = Listbox(left_frame, width=43, height=20, selectmode=SINGLE)
         pass_list.pack(padx=20)
+        
+        #def get_all_passwords():
+        
+        conn = connect("passwords.db")
+        cur = conn.cursor()
+        exec = cur.execute("SELECT * FROM passwords")
+        values = cur.fetchall()
+        conn.commit()
+        conn.close()
+        
+        for data in values:
+            data_row = data[0] + " || " + data[1] # + " || "  + data[2]
+            pass_list.insert(END, data_row)
+            pass_list.pack(padx=20)
 
         password_window_button_width = 15
         main_window_button_padding = 10
@@ -121,6 +125,10 @@ if __name__ == '__main__':
         add_button = Button(button_frame, text="Add Entry", command=add_password_entry,
                             width=password_window_button_width)
         add_button.pack(padx=main_window_button_padding)
+
+        refresh_button = Button(button_frame, text="Refresh List", command=refresh_listbox,
+                                width=password_window_button_width)
+        refresh_button.pack(padx=main_window_button_padding)
 
         remove_button = Button(button_frame, text="Remove Entry", command=remove_password_entry,
                                width=password_window_button_width)
@@ -138,31 +146,34 @@ if __name__ == '__main__':
 
 
     passwordCorrect()
+    
+    #-*-*-*-*-*-*-*-*-*-*-*-* KEYCHAIN PASSWORD -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    
     # def submit_button_command():
     #     password_window.destroy()
     #     passwordCorrect()
-    #
+    
     # def cancel_button_command():
     #     password_window.quit()
 
     # password_window = Tk()
     # password_window.geometry("300x150")
     # password_window.title("Epoxy Password Entry")
-    #
+    
     # enter_password_label = Label(password_window, text = "Please enter password")
     # enter_password_label.pack()
-    #
+    
     # password_entry = Entry(password_window, show = "*", width = 20)
     # password_entry.pack()
-    #
+    
     # button_padding = 10
     # button_frame = Frame(password_window)
     # button_frame.pack(pady = button_padding)
-    #
+    
     # submit_button = Button(button_frame, text = "Submit", command = submit_button_command)
     # submit_button.pack(side = LEFT, padx = button_padding)
-    #
+    
     # cancel_button = Button(button_frame, text = "Cancel", command = cancel_button_command)
     # cancel_button.pack(side = RIGHT, padx = button_padding)
-    #
+    
     # password_window.mainloop()
