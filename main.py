@@ -1,7 +1,6 @@
 from tkinter import *
 from sqlite3 import *
-
-import call_database
+from call_database import *
 
 if __name__ == '__main__':
     def add_new_entry(): # -*-*-*-*-*-*-*-*-*-*-*-* ADD NEW ENTRY WINDOW -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -13,9 +12,9 @@ if __name__ == '__main__':
             service_input = service_field.get()
             username_input = username_field.get()
             password_input = password_field.get()
-
+            db = AccessDB()
             try:
-                submit_entry = call_database.add_new_entry(service_input, username_input, password_input)
+                submit_entry = db.add_new_entry(service_input, username_input, password_input)
             finally:
                 for widgets in add_new_entry_window.winfo_children():
                     widgets.destroy()
@@ -80,10 +79,33 @@ if __name__ == '__main__':
             add_new_entry()
             
         def refresh_listbox():
-            pass_list.update()
-
+            pass_list.delete(0, END)
+            
+            conn = connect("passwords.db")
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM passwords")
+            values = cur.fetchall()
+            conn.commit()
+            conn.close()
+            
+            for data in values:
+                data_row = data[0] + " || " + data[1] # + " || "  + data[2]
+                pass_list.insert(END, data_row)
+                
+            
+            
         def remove_password_entry():  # Deletes record being selected
             print("Removing password entry")
+            
+            entry_to_delete = pass_list.get()
+            print(entry_to_delete)
+            
+            conn = connect("passwords.db")
+            cur = conn.cursor()
+            cur.execute("DELETE FROM passwords WHERE service = (?)")
+            values = cur.fetchall()
+            conn.commit()
+            conn.close()
 
         def copy_pass_to_clipboard():  # Copies recorded password to clipboard to paste into other program
             print("Copying password")
@@ -92,7 +114,7 @@ if __name__ == '__main__':
             main_window.quit()
 
         main_window = Tk()
-        main_window.geometry("650x400")
+        main_window.geometry("500x280")
         main_window.title("Epoxy Password Manager")
 
         left_frame = Frame(main_window)
@@ -104,11 +126,13 @@ if __name__ == '__main__':
         pass_list = Listbox(left_frame, width=43, height=20, selectmode=SINGLE)
         pass_list.pack(padx=20)
         
-        #def get_all_passwords():
+        print(pass_list)
+        
+        AccessDB()
         
         conn = connect("passwords.db")
         cur = conn.cursor()
-        exec = cur.execute("SELECT * FROM passwords")
+        cur.execute("SELECT * FROM passwords")
         values = cur.fetchall()
         conn.commit()
         conn.close()
@@ -132,6 +156,7 @@ if __name__ == '__main__':
 
         remove_button = Button(button_frame, text="Remove Entry", command=remove_password_entry,
                                width=password_window_button_width)
+        
         remove_button.pack(padx=main_window_button_padding)
 
         copy_button = Button(button_frame, text="Copy Password", command=copy_pass_to_clipboard,
@@ -145,6 +170,7 @@ if __name__ == '__main__':
         main_window.mainloop()
 
 
+if __name__ == "__main__":
     passwordCorrect()
     
     #-*-*-*-*-*-*-*-*-*-*-*-* KEYCHAIN PASSWORD -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*

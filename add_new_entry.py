@@ -4,7 +4,6 @@ from sqlite3 import *
 import call_database
 import main
 
-
 def add_new_entry():
         add_new_entry_window = Tk()
         add_new_entry_window.title("Add New Entry")
