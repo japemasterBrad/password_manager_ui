@@ -1,3 +1,4 @@
+import os
 from tkinter import *
 from sqlite3 import *
 from call_database import *
@@ -13,6 +14,7 @@ if __name__ == '__main__':
             username_input = username_field.get()
             password_input = password_field.get()
             db = AccessDB()
+            
             try:
                 submit_entry = db.add_new_entry(service_input, username_input, password_input)
             finally:
@@ -89,29 +91,76 @@ if __name__ == '__main__':
             conn.close()
             
             for data in values:
-                data_row = data[0] + " || " + data[1] # + " || "  + data[2]
+                data_row = data[0] #+ " || " + data[1]  + " || "  + data[2]
                 pass_list.insert(END, data_row)
                 
             
+        def reveal_login():
             
-        def remove_password_entry():  # Deletes record being selected
-            print("Removing password entry")
-            
-            entry_to_delete = pass_list.get()
+            entry_to_delete_get = pass_list.get(0, END)
+            entry_to_delete = str(entry_to_delete_get[0])
+
             print(entry_to_delete)
-            
+            print(type(entry_to_delete))
+
             conn = connect("passwords.db")
             cur = conn.cursor()
-            cur.execute("DELETE FROM passwords WHERE service = (?)")
+            cur.execute("SELECT * FROM passwords WHERE service = (?)", entry_to_delete)
             values = cur.fetchall()
             conn.commit()
             conn.close()
-
+            
+            print(f"{values}")
+            
+            # reveal_login_window = Tk()
+            # login_listbox = Listbox(reveal_login_window)
+            # close_button = Button(reveal_login_window, text = "Close")
+            # reveal_login_window.mainloop()
+            
+            '''
+            
+            start a new window
+            pull username and password from database
+            paste it into a listbox in the new window
+            
+            '''
+        
+            
+        def remove_password_entry():  # Deletes record being selected
+            os.system("clear")
+            print("Removing password entry")
+            
+            entry_to_delete = pass_list.get(0, END)
+            entry_to_delete = entry_to_delete[0]
+            str(entry_to_delete)
+            
+            print(f"Entry to delete: {entry_to_delete}")
+            
+            conn = connect("passwords.db")
+            cur = conn.cursor()
+            cur.execute("DELETE FROM passwords WHERE service = (?)", (entry_to_delete,))
+            conn.commit()
+            conn.close()
+            
+            print("Deleted Successfully!\n\n")
+            
+            
+        def remove_password_button():
+            remove_password_entry()
+            pass_list.delete(0, END)
+            
+        
+        def populate_services():
+            pass
+            
+            
         def copy_pass_to_clipboard():  # Copies recorded password to clipboard to paste into other program
             print("Copying password")
 
+
         def close_window():
             main_window.quit()
+
 
         main_window = Tk()
         main_window.geometry("500x280")
@@ -124,7 +173,7 @@ if __name__ == '__main__':
         button_frame.pack(side=RIGHT, ipady=30)
 
         pass_list = Listbox(left_frame, width=43, height=20, selectmode=SINGLE)
-        pass_list.pack(padx=20)
+        pass_list.pack(padx=10)
         
         print(pass_list)
         
@@ -140,10 +189,10 @@ if __name__ == '__main__':
         pass_list.delete(0, END)
         
         for data in values:
-            data_row = data[0] + " || " + data[1] # + " || "  + data[2]
+            data_row = data[0]
             pass_list.insert(END, data_row)
 
-        password_window_button_width = 15
+        password_window_button_width = 20
         main_window_button_padding = 10
 
         add_button = Button(button_frame, text="Add Entry", command=add_password_entry,
@@ -154,7 +203,11 @@ if __name__ == '__main__':
                                 width=password_window_button_width)
         refresh_button.pack(padx=main_window_button_padding)
 
-        remove_button = Button(button_frame, text="Remove Entry", command=remove_password_entry,
+        reveal_details = Button(button_frame, text = "Reveal Login Details", command = reveal_login,
+                                width=password_window_button_width)
+        reveal_details.pack()
+
+        remove_button = Button(button_frame, text="Remove Entry", command=remove_password_button,
                                width=password_window_button_width)
         
         remove_button.pack(padx=main_window_button_padding)
