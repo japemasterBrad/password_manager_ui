@@ -1,4 +1,5 @@
 import os
+from re import L
 from tkinter import *
 from sqlite3 import *
 from call_database import *
@@ -15,6 +16,7 @@ if __name__ == '__main__':
             password_input = password_field.get()
             db = AccessDB()
             
+            
             try:
                 submit_entry = db.add_new_entry(service_input, username_input, password_input)
             finally:
@@ -30,6 +32,7 @@ if __name__ == '__main__':
 
         def destroy_entry_window():
             add_new_entry_window.destroy()
+     
 
         text_field_width = 20
         frame_padding = 10
@@ -74,11 +77,18 @@ if __name__ == '__main__':
         cancel_button.pack(side=RIGHT, padx=frame_padding)
 
         add_new_entry_window.mainloop()
+        
 
     def passwordCorrect(): #-*-*-*-*-*-*-*-*-*-*-*-* IF PASSWORD IS CORRECT -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
         def add_password_entry():  # opens window to submit new service, username, password
             print("Adding password entry")
             add_new_entry()
+            
+            
+        def add_password_button():
+            add_password_entry()
+            populate_services()
+            
             
         def refresh_listbox():
             pass_list.delete(0, END)
@@ -91,12 +101,11 @@ if __name__ == '__main__':
             conn.close()
             
             for data in values:
-                data_row = data[0] #+ " || " + data[1]  + " || "  + data[2]
+                data_row = data[0]
                 pass_list.insert(END, data_row)
                 
             
         def reveal_login():
-            
             entry_to_delete_get = pass_list.get(0, END)
             entry_to_delete = str(entry_to_delete_get[0])
 
@@ -125,13 +134,17 @@ if __name__ == '__main__':
             
             '''
         
+        
+        def remove_password_button():
+            remove_password_entry()
+            populate_services()
+            
             
         def remove_password_entry():  # Deletes record being selected
             os.system("clear")
             print("Removing password entry")
             
-            entry_to_delete = pass_list.get(0, END)
-            entry_to_delete = entry_to_delete[0]
+            entry_to_delete = pass_list.get(ANCHOR)
             str(entry_to_delete)
             
             print(f"Entry to delete: {entry_to_delete}")
@@ -141,18 +154,24 @@ if __name__ == '__main__':
             cur.execute("DELETE FROM passwords WHERE service = (?)", (entry_to_delete,))
             conn.commit()
             conn.close()
-            
+        
             print("Deleted Successfully!\n\n")
-            
-            
-        def remove_password_button():
-            remove_password_entry()
-            pass_list.delete(0, END)
             
         
         def populate_services():
-            pass
+            pass_list.delete(0, END)
+             
+            conn = connect("passwords.db")
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM passwords")
+            values = cur.fetchall()
+            conn.commit()
+            conn.close()
             
+            for data in values: 
+                data_row = data[0]
+                pass_list.insert(END, data_row)
+                
             
         def copy_pass_to_clipboard():  # Copies recorded password to clipboard to paste into other program
             print("Copying password")
@@ -172,6 +191,7 @@ if __name__ == '__main__':
         button_frame = Frame(main_window)
         button_frame.pack(side=RIGHT, ipady=30)
 
+        global pass_list
         pass_list = Listbox(left_frame, width=43, height=20, selectmode=SINGLE)
         pass_list.pack(padx=10)
         
@@ -181,7 +201,7 @@ if __name__ == '__main__':
         
         conn = connect("passwords.db")
         cur = conn.cursor()
-        cur.execute("SELECT * FROM passwords")
+        cur.execute("SELECT * FROM passwords ORDER BY service ASC")
         values = cur.fetchall()
         conn.commit()
         conn.close()
@@ -195,7 +215,7 @@ if __name__ == '__main__':
         password_window_button_width = 20
         main_window_button_padding = 10
 
-        add_button = Button(button_frame, text="Add Entry", command=add_password_entry,
+        add_button = Button(button_frame, text="Add Entry", command=add_password_button,
                             width=password_window_button_width)
         add_button.pack(padx=main_window_button_padding)
 
