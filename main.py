@@ -1,24 +1,25 @@
+from curses.panel import top_panel
 import os
-from re import L
 from tkinter import *
 from sqlite3 import *
-from call_database import *
+from tkinter.messagebox import showerror
+import call_database as db
 
 if __name__ == '__main__':
     def add_new_entry(): # -*-*-*-*-*-*-*-*-*-*-*-* ADD NEW ENTRY WINDOW -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
         add_new_entry_window = Tk()
         add_new_entry_window.title("Add New Entry")
         add_new_entry_window.geometry("300x140")
+        
 
         def submit_to_db():
             service_input = service_field.get()
             username_input = username_field.get()
             password_input = password_field.get()
-            db = AccessDB()
-            
-            
+            # db = AccessDB()
             try:
-                submit_entry = db.add_new_entry(service_input, username_input, password_input)
+                submit_entry = db.AccessDB.add_new_entry(service_input, username_input, password_input)
+                
             finally:
                 for widgets in add_new_entry_window.winfo_children():
                     widgets.destroy()
@@ -31,9 +32,26 @@ if __name__ == '__main__':
             return submit_entry
 
         def destroy_entry_window():
-            add_new_entry_window.destroy()
+            add_new_entry_window ()
      
 
+        def populate_services():
+            pass_list.delete(0, END)
+             
+            conn = connect("passwords.db")
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM passwords ORDER BY service ASC")
+            values = cur.fetchall()
+            conn.commit()
+            conn.close()
+            
+            for data in values: 
+                data_row = data[0]
+                # pass_list.insert(END, data_row)
+                pass_list.insert(END, data_row)
+                
+                
+                
         text_field_width = 20
         frame_padding = 10
 
@@ -80,64 +98,80 @@ if __name__ == '__main__':
         
 
     def passwordCorrect(): #-*-*-*-*-*-*-*-*-*-*-*-* IF PASSWORD IS CORRECT -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-        def add_password_entry():  # opens window to submit new service, username, password
+        def add_password_entry(): # opens window to submit new service, username, password
+            os.system("clear")
             print("Adding password entry")
+            print("We're getting here")
             add_new_entry()
+            # print("but not here.....")
+            # populate_services()
             
-            
-        def add_password_button():
-            add_password_entry()
-            populate_services()
-            
-            
-        def refresh_listbox():
-            pass_list.delete(0, END)
-            
-            conn = connect("passwords.db")
-            cur = conn.cursor()
-            cur.execute("SELECT * FROM passwords")
-            values = cur.fetchall()
-            conn.commit()
-            conn.close()
-            
-            for data in values:
-                data_row = data[0]
-                pass_list.insert(END, data_row)
-                
+        def error_box(error_message):
+            showerror("ERROR", error_message)
             
         def reveal_login():
-            entry_to_delete_get = pass_list.get(0, END)
-            entry_to_delete = str(entry_to_delete_get[0])
-
-            print(entry_to_delete)
-            print(type(entry_to_delete))
+            entry_height = 10
+            
+            reveal_login_window = Tk()
+            reveal_login_window.geometry("300x200")
+            
+            top_frame = Frame(reveal_login_window)
+            top_frame.pack(side = TOP)
+            bottom_frame = Frame(reveal_login_window)
+            bottom_frame.pack(side = BOTTOM)
+           
+            service_label = Label(top_frame, text = "Service")
+            service_label.pack()
+            
+            service_return = Entry(top_frame)
+            service_return.pack()
+           
+            username_label = Label(top_frame, text = "Username")
+            username_label.pack()
+            
+            username_return = Entry(top_frame)
+            username_return.pack()
+           
+            password_label = Label(top_frame, text = "Password")
+            password_label.pack()
+            
+            password_return = Entry(top_frame)
+            password_return.pack()
+           
+            def close():
+                reveal_login_window.destroy()
+           
+            close_button = Button(bottom_frame, text = "Close", command = close)
+            close_button.pack()
+            
+            entry_to_delete_get = pass_list.get(ANCHOR)
+            entry_to_delete = str(entry_to_delete_get)
 
             conn = connect("passwords.db")
             cur = conn.cursor()
-            cur.execute("SELECT * FROM passwords WHERE service = (?)", entry_to_delete)
-            values = cur.fetchall()
+            cur.execute("SELECT * FROM passwords WHERE service = (?)", (entry_to_delete,))
+            user = cur.fetchall()
             conn.commit()
             conn.close()
             
-            print(f"{values}")
+            print(user)
             
-            # reveal_login_window = Tk()
-            # login_listbox = Listbox(reveal_login_window)
-            # close_button = Button(reveal_login_window, text = "Close")
-            # reveal_login_window.mainloop()
+            username = user[0][1]
+            password = user[0][2]
             
-            '''
+            print("username: " + username)
+            print("password: " + password)
+
+            service_return.insert(0, entry_to_delete)
+            username_return.insert(0, username)
+            password_return.insert(0, password)
             
-            start a new window
-            pull username and password from database
-            paste it into a listbox in the new window
+            reveal_login_window.mainloop()
             
-            '''
-        
         
         def remove_password_button():
             remove_password_entry()
-            populate_services()
+            # populate_services()
             
             
         def remove_password_entry():  # Deletes record being selected
@@ -163,7 +197,7 @@ if __name__ == '__main__':
              
             conn = connect("passwords.db")
             cur = conn.cursor()
-            cur.execute("SELECT * FROM passwords")
+            cur.execute("SELECT * FROM passwords ORDER BY service ASC")
             values = cur.fetchall()
             conn.commit()
             conn.close()
@@ -171,19 +205,12 @@ if __name__ == '__main__':
             for data in values: 
                 data_row = data[0]
                 pass_list.insert(END, data_row)
-                
-            
-        def copy_pass_to_clipboard():  # Copies recorded password to clipboard to paste into other program
-            print("Copying password")
-
-
-        def close_window():
-            main_window.quit()
-
-
+                    
+                    
         main_window = Tk()
-        main_window.geometry("500x280")
+        main_window.geometry("420x280")
         main_window.title("Epoxy Password Manager")
+        main_window.resizable(height = False, width = False)
 
         left_frame = Frame(main_window)
         left_frame.pack(side=LEFT)
@@ -192,12 +219,10 @@ if __name__ == '__main__':
         button_frame.pack(side=RIGHT, ipady=30)
 
         global pass_list
-        pass_list = Listbox(left_frame, width=43, height=20, selectmode=SINGLE)
+        pass_list = Listbox(left_frame, width=30, height=20, selectmode=SINGLE)
         pass_list.pack(padx=10)
         
-        print(pass_list)
-        
-        AccessDB()
+        db.AccessDB()
         
         conn = connect("passwords.db")
         cur = conn.cursor()
@@ -215,11 +240,11 @@ if __name__ == '__main__':
         password_window_button_width = 20
         main_window_button_padding = 10
 
-        add_button = Button(button_frame, text="Add Entry", command=add_password_button,
+        add_button = Button(button_frame, text="Add Entry", command=add_password_entry,
                             width=password_window_button_width)
         add_button.pack(padx=main_window_button_padding)
 
-        refresh_button = Button(button_frame, text="Refresh List", command=refresh_listbox,
+        refresh_button = Button(button_frame, text="Refresh List", command=populate_services,
                                 width=password_window_button_width)
         refresh_button.pack(padx=main_window_button_padding)
 
@@ -231,15 +256,6 @@ if __name__ == '__main__':
                                width=password_window_button_width)
         
         remove_button.pack(padx=main_window_button_padding)
-
-        copy_button = Button(button_frame, text="Copy Password", command=copy_pass_to_clipboard,
-                             width=password_window_button_width)
-        copy_button.pack(padx=main_window_button_padding)
-
-        close_button = Button(button_frame, text="Close", command=close_window,
-                              width=password_window_button_width)
-        close_button.pack(padx=main_window_button_padding)
-
         main_window.mainloop()
 
 
@@ -253,7 +269,7 @@ if __name__ == "__main__":
     #     passwordCorrect()
     
     # def cancel_button_command():
-    #     password_window.quit()
+    #     password_window.destroy()
 
     # password_window = Tk()
     # password_window.geometry("300x150")

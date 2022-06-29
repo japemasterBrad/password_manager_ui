@@ -69,7 +69,8 @@ def add_new_entry():
         submit_button = Button(bottom_frame, text='Submit', command=submit_to_db)
         submit_button.pack(side=LEFT, padx=frame_padding)
 
-        cancel_button = Button(bottom_frame, text='Cancel', command=destroy_entry_window)
-        cancel_button.pack(side=RIGHT, padx=frame_padding)
+        # CANCEL BUTTON FOR WHEN FIXED
+        # cancel_button = Button(bottom_frame, text='Cancel', command=destroy_entry_window)
+        # cancel_button.pack(side=RIGHT, padx=frame_padding)
 
         add_new_entry_window.mainloop()

@@ -1,3 +1,5 @@
+from main import *
+
 from sqlite3 import *
 
 class AccessDB:
@@ -13,17 +15,19 @@ class AccessDB:
         conn.commit()
         conn.close()
 
-    def add_new_entry(self, service, username, password):
+
+    def add_new_entry(service, username, password):
         conn = connect("passwords.db")
         cur = conn.cursor()
         cur.execute(
                     "INSERT INTO passwords (service, username, password)"
-                    "VALUES ((?), (?), (?))", [service, username, password]
+                    "VALUES ((?), (?), (?))", (service, username, password)
                     )
         conn.commit()
         conn.close()
-
-    def remove_entry(self):
+        
+        
+    def remove_entry():
         conn = connect("passwords.db")
         cur = conn.cursor()
         cur.execute(
